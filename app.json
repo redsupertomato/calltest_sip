@@ -12,7 +12,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.msteinwinter.calltest1"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +23,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "77f0d321-249c-4a55-a888-ae589e4e951e"
+      }
     }
   }
 }
