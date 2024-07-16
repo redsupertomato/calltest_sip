@@ -55,7 +55,7 @@ export default function App () {
       borderColor: 'gray',
       borderWidth: 1,
       borderRadius: 20,
-      padding: 5, 10,
+      padding: 10,
     },
     title: {
       fontSize: 20,
