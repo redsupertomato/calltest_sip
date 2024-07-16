@@ -1,6 +1,6 @@
 import  { UserAgent, Registerer }  from 'sip.js';
 
-const sipRegister = () => {
+const sipRegister = (setStatus) => {
   console.log ('>>>>> start sipRegister')
 
   const transportOptions = {
@@ -27,6 +27,7 @@ const sipRegister = () => {
       registerer.register().then (() => {
         console.log ('register state: ' + registerer.state);
         setTimeout(() => {
+          if (registerer.state === 'Registered') setStatus ('registered');
           console.log ('register state: ' + registerer.state);
         }, 3000);
       });
@@ -35,7 +36,8 @@ const sipRegister = () => {
   catch {
     console.log ('userAgent start/register failed')
   }
-  return userAgent;
+  return  userAgent;
+  // return  { ua: userAgent, reg: registerer }
 }
 
 export default sipRegister

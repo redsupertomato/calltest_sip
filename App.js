@@ -10,14 +10,14 @@ export default function App () {
   // const [ext, setExt] = useState ('');
 
   let ext;
-  let userAgent;
 
   // >>>>> Register the user.
   const handleRegister = () => {
     Keyboard.dismiss();
     alert('Registered');
     setStatus ('registering');
-    userAgent = sipRegister ();
+    userAgent  = sipRegister (setStatus);
+    console.log ('userAgent.state: ' + userAgent.state)
   }
   const handleCall = () => {
     Keyboard.dismiss();
