@@ -7,8 +7,9 @@ import sipRegister from './sipHelpers/sipRegister';
 export default function App () {
   console.log ('>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
   const [status, setStatus] = useState ('idle');
-  const [ext, setExt] = useState ('');
+  // const [ext, setExt] = useState ('');
 
+  let ext;
   let userAgent;
 
   // >>>>> Register the user.
@@ -32,7 +33,7 @@ export default function App () {
       </Pressable>
       <TextInput
         style={styles.input}
-        onChangeText={(text) => setExt(text)}
+        onChangeText={(text) => {ext = text}}
         placeholder="extension to call"
         keyboardType="numeric"
       />
