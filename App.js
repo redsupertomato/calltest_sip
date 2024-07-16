@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { StyleSheet, View, Text, Pressable, TextInput, Keyboard } from 'react-native';
 import 'expo-dev-client';
 
+import sipRegister from './sipHelpers/sipRegister';
+
 export default function App () {
   console.log ('>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
   const [status, setStatus] = useState ('idle');
@@ -14,7 +16,7 @@ export default function App () {
     Keyboard.dismiss();
     alert('Registered');
     setStatus ('registering');
-    // userAgent = sipRegister ();
+    userAgent = sipRegister ();
   }
   const handleCall = () => {
     Keyboard.dismiss();
