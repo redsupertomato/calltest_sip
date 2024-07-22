@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Pressable, TextInput, Keyboard } from 'react-na
 import 'expo-dev-client';
 
 import sipRegister from './sipHelpers/sipRegister';
+import sipCall from './sipHelpers/sipCall';
 
 export default function App () {
   console.log ('>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
@@ -10,20 +11,19 @@ export default function App () {
   // const [ext, setExt] = useState ('');
 
   let ext;
+  let userAgent;
 
   // >>>>> Register the user.
   const handleRegister = () => {
     Keyboard.dismiss();
-    alert('Registered');
     setStatus ('registering');
     userAgent  = sipRegister (setStatus);
     console.log ('userAgent.state: ' + userAgent.state)
   }
   const handleCall = () => {
     Keyboard.dismiss();
-    alert('Calling extension: ' + ext);
-    setStatus ('calling');
-    // sipCall (userAgent, ext)
+    setStatus ('calling ' + ext);
+    sipCall (userAgent, ext)
   }
   return (
     <View style={styles.page}>
