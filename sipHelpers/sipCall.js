@@ -1,8 +1,8 @@
 import React from 'react'
-import { View, Text } from 'react-native';
 
 const sipCall = (userAgent, ext) => {
   alert ('>>> starting sipCall to ' + ext);
+  alert ('userAgent state: ' + userAgent.state)
   return (
     <div></div>
   )

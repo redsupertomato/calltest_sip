@@ -1,43 +1,23 @@
+import { useEffect } from 'react';
 import  { UserAgent, Registerer }  from 'sip.js';
 
-const sipRegister = (setStatus) => {
-  console.log ('>>>>> start sipRegister')
+import { myLog } from '../myStuff/myStuff.js';
 
-  const transportOptions = {
-    server: "wss://rhpbxprod02.com:8089/ws"
-  };
 
-  const uri = UserAgent.makeURI("sip:10005@rhpbxprod02.com");
-  if (!uri) {
-    console.log ("Failed to create URI");
-  }
-  const userAgentOptions = {
-    uri,
-    authorizationPassword: "Mark2Mark2",
-    authorizationUsername: "10005",
-    transportOptions
-  };
-  const userAgent = new UserAgent(userAgentOptions);
+const sipReg2 = async (userAgent, setStatus) => {
+  const routine = 'sipReg2 ';
+  myLog (routine + '>>>>> start >>>>>');
+  myLog (routine + 'userAgent.stateX: '+ userAgent.state);
 
   try {
-    console.log ('starting user agent');
-    userAgent.start().then(() => {
-      console.log ('registering user agent');
-      const registerer = new Registerer(userAgent);
-      registerer.register().then (() => {
-        console.log ('register state: ' + registerer.state);
-        setTimeout(() => {
-          if (registerer.state === 'Registered') setStatus ('registered');
-          console.log ('register state: ' + registerer.state);
-        }, 3000);
-      });
-    });
+    myLog (routine + ' registering user agent');
+    const registerer = new Registerer(userAgent);
+    await registerer.register();
+    return registerer;
   }
-  catch {
-    console.log ('userAgent start/register failed')
+  catch (err) {
+    myLog (routine + ' userAgent start/register failed: ' + err.message);
   }
-  return  userAgent;
-  // return  { ua: userAgent, reg: registerer }
 }
 
-export default sipRegister
+export default sipReg2;

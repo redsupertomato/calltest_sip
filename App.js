@@ -1,28 +1,45 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { StyleSheet, View, Text, Pressable, TextInput, Keyboard } from 'react-native';
 import 'expo-dev-client';
 
-import sipRegister from './sipHelpers/sipRegister';
+import { myLog } from './myStuff/myStuff.js';
+
+import sipStart from './sipHelpers/sipStart.js';
+import sipRegister from './sipHelpers/sipRegister.js';
+
 import sipCall from './sipHelpers/sipCall';
 
+let userAgent;
+let registerer;
+
 export default function App () {
-  console.log ('>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+  const routine = 'App';
+  myLog ('\n\n\n>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
   const [status, setStatus] = useState ('idle');
-  // const [ext, setExt] = useState ('');
+
+  // const userAgent = useRef ();
+  // const registerer = useRef ();
 
   let ext;
-  let userAgent;
 
   // >>>>> Register the user.
-  const handleRegister = () => {
+  const handleRegister = async () => {
+    myLog (routine  + '> handleRegister: registering')
     Keyboard.dismiss();
     setStatus ('registering');
-    userAgent  = sipRegister (setStatus);
-    console.log ('userAgent.state: ' + userAgent.state)
+    try {
+      userAgent = await sipStart (setStatus);
+      myLog (routine + '> handleRegister - userAgent.state: ' + userAgent.state);
+      registerer = await sipRegister (userAgent, setStatus)
+      myLog (routine + '> handleRegister - registerer.state: ' + registerer.state);
+      registerer.addListener (registerer.stateChange, () => setStatus (registerer.state))
+    }
+    catch (err) { alert (err.message); }
   }
   const handleCall = () => {
     Keyboard.dismiss();
     setStatus ('calling ' + ext);
+    myLog (routine + ' handleCall - userAgent.state: ' + userAgent.state);
     sipCall (userAgent, ext)
   }
   return (
