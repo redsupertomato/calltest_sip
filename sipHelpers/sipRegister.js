@@ -1,23 +1,26 @@
-import { useEffect } from 'react';
-import  { UserAgent, Registerer }  from 'sip.js';
+import  { Registerer }  from 'sip.js';
 
 import { myLog } from '../myStuff/myStuff.js';
 
-
-const sipReg2 = async (userAgent, setStatus) => {
-  const routine = 'sipReg2 ';
+const sipRegister = async ( userAgent, setStatus ) => {
+  const routine = 'sipRegister ';
   myLog (routine + '>>>>> start >>>>>');
-  myLog (routine + 'userAgent.stateX: '+ userAgent.state);
+  myLog (routine + '- userAgent.state: '+ userAgent.state);
+
+  setStatus ('Registering');
 
   try {
-    myLog (routine + ' registering user agent');
+    myLog (routine + '- registering user agent');
     const registerer = new Registerer(userAgent);
     await registerer.register();
+    registerer.stateChange.addListener (() => setStatus (registerer.state))
     return registerer;
   }
   catch (err) {
-    myLog (routine + ' userAgent start/register failed: ' + err.message);
+    msg = routine + '- userAgent register failed: ' + err.message;
+    myLog (msg);
+    alert (msg);
   }
 }
 
-export default sipReg2;
+export default sipRegister;

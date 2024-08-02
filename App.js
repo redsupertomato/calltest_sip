@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, View, Text, Pressable, TextInput, Keyboard } from 'react-native';
 import 'expo-dev-client';
 
@@ -6,41 +6,34 @@ import { myLog } from './myStuff/myStuff.js';
 
 import sipStart from './sipHelpers/sipStart.js';
 import sipRegister from './sipHelpers/sipRegister.js';
-
 import sipCall from './sipHelpers/sipCall';
 
 let userAgent;
 let registerer;
+let ext;
 
 export default function App () {
   const routine = 'App';
   myLog ('\n\n\n>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-  const [status, setStatus] = useState ('idle');
-
-  // const userAgent = useRef ();
-  // const registerer = useRef ();
-
-  let ext;
+  const [status, setStatus] = useState ('Idle');
 
   // >>>>> Register the user.
   const handleRegister = async () => {
-    myLog (routine  + '> handleRegister: registering')
+    myLog (routine  + ' > handleRegister > start')
     Keyboard.dismiss();
-    setStatus ('registering');
     try {
       userAgent = await sipStart (setStatus);
-      myLog (routine + '> handleRegister - userAgent.state: ' + userAgent.state);
+      myLog (routine + ' > handleRegister - userAgent.state: ' + userAgent.state);
       registerer = await sipRegister (userAgent, setStatus)
-      myLog (routine + '> handleRegister - registerer.state: ' + registerer.state);
-      registerer.addListener (registerer.stateChange, () => setStatus (registerer.state))
+      myLog (routine + ' > handleRegister - registerer.state: ' + registerer.state);
     }
     catch (err) { alert (err.message); }
   }
+
+  // >>>>> Initiate a call.
   const handleCall = () => {
     Keyboard.dismiss();
-    setStatus ('calling ' + ext);
-    myLog (routine + ' handleCall - userAgent.state: ' + userAgent.state);
-    sipCall (userAgent, ext)
+    sipCall (userAgent, ext, setStatus);
   }
   return (
     <View style={styles.page}>
@@ -48,15 +41,15 @@ export default function App () {
       <Pressable onPress={ handleRegister } style={styles.button}>
         <Text style={styles.title}>Register</Text>
       </Pressable>
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => {ext = text}}
-        placeholder="extension to call"
-        keyboardType="numeric"
-      />
-      <Pressable onPress={ handleCall } style={styles.button}>
+        <TextInput
+          style={styles.input}
+          onChangeText={(text) => {ext = text}}
+          placeholder="extension to call"
+          keyboardType="numeric"
+        />
+        <Pressable onPress={ handleCall } disabled={(status!=='Registered')} style={styles.button}>
         <Text style={styles.title}>Call</Text>
-      </Pressable>
+        </Pressable>
       <Text style={styles.text}>Status: {status}</Text>
     </View>
   )
@@ -64,9 +57,10 @@ export default function App () {
   const styles = StyleSheet.create({
     page: {
       flex: 1,
-      justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: '#F5FCFF',
+      position: 'relative',
+      top: 100,
     },
     button: {
       marginBottom: 10,

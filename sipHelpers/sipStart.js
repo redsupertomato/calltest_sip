@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
-import  { UserAgent, Registerer }  from 'sip.js';
+import  { UserAgent }  from 'sip.js';
 
 import { myLog } from '../myStuff/myStuff.js';
 
-const sipRegister = async (setStatus) => {
-  const routine = 'sipRegister ';
-  myLog (routine + '>>>>> start sipRegister');
+const sipStart = async (setStatus) => {
+  const routine = 'sipStart ';
+  myLog (routine + '>>>>> start >>>>>');
+
+  setStatus ('Starting SIP');
 
   const transportOptions = {
     server: "wss://rhpbxprod02.com:8089/ws"
@@ -21,17 +22,18 @@ const sipRegister = async (setStatus) => {
     authorizationUsername: "10005",
     transportOptions
   };
-  userAgent = new UserAgent(userAgentOptions);
 
   try {
-    myLog (routine + ' starting user agent');
+    myLog (routine + '- starting user agent');
+    userAgent = new UserAgent(userAgentOptions);
     await userAgent.start();
   }
-  catch {
-    myLog (routine + ' userAgent start/register failed')
+  catch (err) {
+    msg = routine + '- userAgent start failed: ' + err.message;
+    myLog (msg);
+    alert (msg);
   }
   return userAgent;
-  // return  { userAgent, registerer };
 }
 
-export default sipRegister
+export default sipStart
