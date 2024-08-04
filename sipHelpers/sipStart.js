@@ -18,7 +18,7 @@ const sipStart = async (setStatus) => {
   }
   const userAgentOptions = {
     uri,
-    authorizationPassword: "Mark2Mark2",
+    authorizationPassword: "Mark10005!",
     authorizationUsername: "10005",
     transportOptions
   };
