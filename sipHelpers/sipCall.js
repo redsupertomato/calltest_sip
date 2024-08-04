@@ -6,10 +6,10 @@ let routine = 'sipCall';
 
 const sipCall = (userAgent, ext, setStatus) => {
   myLog (routine + ' >>>>> start >>>>> Extension: '+ ext);
-  setStatus ('Preparing to call '+ ext)
+  setStatus ('Prepare to call '+ ext);
 
   // Add SIP calling (INVITE) here.
-  // Update screen status as call progresses.
+  // Update screen status as call setup progresses.
 }
 
 export default sipCall

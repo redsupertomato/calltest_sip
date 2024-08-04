@@ -10,46 +10,54 @@ import sipCall from './sipHelpers/sipCall';
 
 let userAgent;
 let registerer;
-let ext;
+let ext = '';
 
 export default function App () {
   const routine = 'App';
   myLog ('\n\n\n>>>>> starting >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-  const [status, setStatus] = useState ('Idle');
 
-  // >>>>> Register the user.
+  const [status, setStatus] = useState ('Idle');
+  const [isRegistered, setIsRegistered] = useState (false);
+
+  // >>>>> SIP connect to server (start) and REGISTER the phone.
   const handleRegister = async () => {
     myLog (routine  + ' > handleRegister > start')
     Keyboard.dismiss();
     try {
-      userAgent = await sipStart (setStatus);
+      userAgent = await sipStart (setStatus);  // Connect to server (asterisk).
       myLog (routine + ' > handleRegister - userAgent.state: ' + userAgent.state);
-      registerer = await sipRegister (userAgent, setStatus)
+      registerer = await sipRegister (userAgent, setStatus, setIsRegistered);  // REGISTER.
       myLog (routine + ' > handleRegister - registerer.state: ' + registerer.state);
     }
     catch (err) { alert (err.message); }
   }
 
-  // >>>>> Initiate a call.
+  // >>>>> Place a call.
   const handleCall = () => {
     Keyboard.dismiss();
+    if (ext === '') { alert ('Enter an extension to call'); return; }  // Validate extension.
     sipCall (userAgent, ext, setStatus);
   }
+
   return (
     <View style={styles.page}>
       <Text style={styles.text}>CallTest1</Text>
+
       <Pressable onPress={ handleRegister } style={styles.button}>
         <Text style={styles.title}>Register</Text>
       </Pressable>
+
+      <View style={{ display: isRegistered ? 'block' : 'none'}}>
         <TextInput
           style={styles.input}
           onChangeText={(text) => {ext = text}}
           placeholder="extension to call"
           keyboardType="numeric"
         />
-        <Pressable onPress={ handleCall } disabled={(status!=='Registered')} style={styles.button}>
-        <Text style={styles.title}>Call</Text>
+        <Pressable onPress={ handleCall } style={styles.button}>
+          <Text style={styles.title}>Call</Text>
         </Pressable>
+      </View>
       <Text style={styles.text}>Status: {status}</Text>
     </View>
   )
@@ -60,7 +68,7 @@ export default function App () {
       alignItems: 'center',
       backgroundColor: '#F5FCFF',
       position: 'relative',
-      top: 100,
+      top: 150,
     },
     button: {
       marginBottom: 10,

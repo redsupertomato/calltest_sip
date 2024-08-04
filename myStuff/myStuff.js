@@ -4,5 +4,5 @@ export const myTimeStr = () => {
 }
 
 export const myLog = (msg) => {
-  console.log ('>>>>> ' + myTimeStr () + ' ' + msg);
+  console.log ('>>> ' + myTimeStr () + ' ' + msg);
 }

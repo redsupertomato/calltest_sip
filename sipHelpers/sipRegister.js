@@ -2,7 +2,7 @@ import  { Registerer }  from 'sip.js';
 
 import { myLog } from '../myStuff/myStuff.js';
 
-const sipRegister = async ( userAgent, setStatus ) => {
+const sipRegister = async ( userAgent, setStatus, setIsRegistered ) => {
   const routine = 'sipRegister ';
   myLog (routine + '>>>>> start >>>>>');
   myLog (routine + '- userAgent.state: '+ userAgent.state);
@@ -13,7 +13,10 @@ const sipRegister = async ( userAgent, setStatus ) => {
     myLog (routine + '- registering user agent');
     const registerer = new Registerer(userAgent);
     await registerer.register();
-    registerer.stateChange.addListener (() => setStatus (registerer.state))
+    registerer.stateChange.addListener (() => {
+      setStatus (registerer.state)
+      setIsRegistered (registerer.state === 'Registered');
+    })  
     return registerer;
   }
   catch (err) {
