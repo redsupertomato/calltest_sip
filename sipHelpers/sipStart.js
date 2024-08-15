@@ -9,7 +9,8 @@ const sipStart = async (setStatus) => {
   setStatus ('Starting SIP');
 
   const transportOptions = {
-    server: "wss://rhpbxprod02.com:8089/ws"
+    server: "wss://rhpbxprod02.com:8089/ws",
+    connectionTimeout: 10000  // 10 seconds
   };
 
   const uri = UserAgent.makeURI("sip:10005@rhpbxprod02.com");
