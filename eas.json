@@ -1,7 +1,4 @@
 {
-  "cli": {
-    "version": ">= 10.0.3"
-  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -10,9 +7,13 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
-  },
-  "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "distribution": "store"
+      },
+      "android": {
+        "gradleCommand": ":app:bundleRelease"
+      }
+    }
   }
 }
