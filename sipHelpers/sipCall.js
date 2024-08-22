@@ -1,52 +1,120 @@
 import { myLog } from '../myStuff/myStuff.js';
+import {
+  RTCPeerConnection,
+  RTCSessionDescription,
+  mediaDevices,
+  registerGlobals,
+} from 'react-native-webrtc';
+import { Inviter, SessionState, UserAgent } from 'sip.js';
+import Sound from 'react-native-sound';
 
-// Assuming you have a library like sip.js available
-import { Inviter, UserAgent } from 'sip.js'; // Example for sip.js
-import { registerGlobals } from 'react-native-webrtc';
-
-let routine = 'sipCall';
 registerGlobals();
+let routine = 'sipCall';
 
 const sipCall = async (userAgent, ext, setStatus) => {
-
   myLog(`${routine} >>>>> start >>>>> Extension: ${ext}`);
   setStatus(`Preparing to call ${ext}`);
 
-  try {
-    // Assuming the userAgent is an instance of a SIP library's user agent
-    // Create a URI for the extension you want to call
-    const targetURI = UserAgent.makeURI(`sip:${ext}@rhpbxprod02.com`);
+  const peerConstraints = {
+    iceServers: [
+      {
+        urls: 'stun:stun.relay.metered.ca:80',
+      },
+      {
+        urls: 'turn:global.relay.metered.ca:80',
+        username: '3b09b9108082e268b7bcfa97',
+        credential: 'jfc6haQzbho21ot6',
+      },
+      {
+        urls: 'turn:global.relay.metered.ca:80?transport=tcp',
+        username: '3b09b9108082e268b7bcfa97',
+        credential: 'jfc6haQzbho21ot6',
+      },
+      {
+        urls: 'turn:global.relay.metered.ca:443',
+        username: '3b09b9108082e268b7bcfa97',
+        credential: 'jfc6haQzbho21ot6',
+      },
+      {
+        urls: 'turns:global.relay.metered.ca:443?transport=tcp',
+        username: '3b09b9108082e268b7bcfa97',
+        credential: 'jfc6haQzbho21ot6',
+      },
+    ],
+  };
 
+  const peerConnection = new RTCPeerConnection(peerConstraints);
+
+  peerConnection.addEventListener('icecandidate', (event) => {
+    if (event.candidate) {
+      console.log('ICE Candidate:', event.candidate);
+    } else {
+      console.log('All ICE candidates have been sent');
+    }
+  });
+
+  peerConnection.addEventListener('track', (event) => {
+    console.log('REDTOMATO >>> Track received');
+    const remoteStream = new MediaStream();
+    remoteStream.addTrack(event.track);
+
+    // Play the received audio track using react-native-sound or directly from the stream
+    const sound = new Sound(remoteStream, (error) => {
+      if (error) {
+        console.error('Failed to load the sound', error);
+        return;
+      }
+      sound.play((success) => {
+        if (success) {
+          console.log('Successfully finished playing');
+        } else {
+          console.error('Playback failed due to audio decoding errors');
+        }
+      });
+    });
+  });
+
+  try {
+    const audioStream = await mediaDevices.getUserMedia({ audio: true, video: false });
+    audioStream.getTracks().forEach((track) => peerConnection.addTrack(track, audioStream));
+
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(new RTCSessionDescription(offer));
+
+    const targetURI = UserAgent.makeURI(`sip:${ext}@rhpbxprod02.com`);
     if (!targetURI) {
-      throw new Error('Invalid target URI');
+      throw new Error('Failed to create target URI');
     }
 
-    // Create an inviter (or similar) to handle the outgoing call
-    const inviter = new Inviter(userAgent, targetURI);
+    const inviteOptions = {
+      extraHeaders: ['X-App-Command: barge'],
+      sessionDescriptionHandlerOptions: {
+        constraints: {
+          audio: true,
+          video: false, // Ensures only audio is used
+        },
+      },
+    };
 
-    // Add listeners for call events
+    const inviter = new Inviter(userAgent, targetURI, inviteOptions);
+
     inviter.stateChange.addListener((state) => {
-      myLog(`Call state changed to: ${state}`);
-      setStatus(`Call state: ${state}`);
-
-      if (state === 'established') {
-        // Call successfully established
-        myLog('Call established');
-        setStatus('Call in progress');
-      } else if (state === 'terminated') {
-        // Call ended
-        myLog('Call terminated');
-        setStatus('Call ended');
+      console.log('REDTOMATO >>> ', state);
+      if (state === SessionState.Establishing) {
+        setStatus('Call establishing');
+      } else if (state === SessionState.Established) {
+        setStatus('Call established');
+      } else if (state === SessionState.Terminated) {
+        setStatus('Call terminated');
       }
     });
 
-    // Send the INVITE request to initiate the call
     await inviter.invite();
-    myLog('INVITE sent');
-    setStatus(`Calling ${ext}...`);
+
+    setStatus(`Calling ${ext}`);
   } catch (err) {
-    myLog(`${routine} error: ${err.message}`);
-    setStatus(`Call failed: ${err.message}`);
+    myLog(`${routine} - Error: ${err.message}`);
+    setStatus(`Error calling ${ext}`);
   }
 };
 

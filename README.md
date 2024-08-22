@@ -18,3 +18,23 @@ server: "wss://rhpbxprod02.com:8089/ws",
     authorizationUsername: "10005",
 
 const uri = UserAgent.makeURI("sip:10005@rhpbxprod02.com");
+
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera for video calls.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone for calls.</string>
+
+
+
+import {
+  RTCPeerConnection,
+  mediaDevices,
+  registerGlobals,
+} from 'react-native-webrtc';
+
+// Register WebRTC globals for compatibility
+registerGlobals();
+
+
+
+# rhpbxprod02.com
