@@ -23,7 +23,7 @@ const sipStart = async (setStatus) => {
     authorizationUsername: "10005",
     transportOptions
   };
-
+  let userAgent = null;
   try {
     myLog (routine + '- starting user agent');
     userAgent = new UserAgent(userAgentOptions);

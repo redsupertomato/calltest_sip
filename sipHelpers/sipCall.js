@@ -1,100 +1,52 @@
-import { Inviter, UserAgent } from 'sip.js';
-import {
-  RTCPeerConnection,
-  RTCSessionDescription,
-  mediaDevices,
-  registerGlobals,
-} from 'react-native-webrtc';
 import { myLog } from '../myStuff/myStuff.js';
 
-// Register WebRTC globals for compatibility
-registerGlobals();
+// Assuming you have a library like sip.js available
+import { Inviter, UserAgent } from 'sip.js'; // Example for sip.js
+import { registerGlobals } from 'react-native-webrtc';
 
 let routine = 'sipCall';
+registerGlobals();
 
 const sipCall = async (userAgent, ext, setStatus) => {
-  myLog(routine + ' >>>>> start >>>>> Extension: ' + ext);
-  setStatus('Initial');
+
+  myLog(`${routine} >>>>> start >>>>> Extension: ${ext}`);
+  setStatus(`Preparing to call ${ext}`);
 
   try {
+    // Assuming the userAgent is an instance of a SIP library's user agent
+    // Create a URI for the extension you want to call
     const targetURI = UserAgent.makeURI(`sip:${ext}@rhpbxprod02.com`);
 
     if (!targetURI) {
       throw new Error('Invalid target URI');
     }
 
+    // Create an inviter (or similar) to handle the outgoing call
     const inviter = new Inviter(userAgent, targetURI);
 
-    // ICE server configuration
-    const iceServers = [
-      { urls: "stun:stun.relay.metered.ca:80" },
-      { urls: "turn:global.relay.metered.ca:80", username: "3b09b9108082e268b7bcfa97", credential: "jfc6haQzbho21ot6" },
-      { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "3b09b9108082e268b7bcfa97", credential: "jfc6haQzbho21ot6" },
-      { urls: "turn:global.relay.metered.ca:443", username: "3b09b9108082e268b7bcfa97", credential: "jfc6haQzbho21ot6" },
-      { urls: "turns:global.relay.metered.ca:443?transport=tcp", username: "3b09b9108082e268b7bcfa97", credential: "jfc6haQzbho21ot6" },
-    ];
+    // Add listeners for call events
+    inviter.stateChange.addListener((state) => {
+      myLog(`Call state changed to: ${state}`);
+      setStatus(`Call state: ${state}`);
 
-    const peerConnection = new RTCPeerConnection({ iceServers });
-
-    peerConnection.onicecandidate = ({ candidate }) => {
-      if (candidate) {
-        myLog(routine + ' > New ICE Candidate: ', candidate);
-      } else {
-        myLog(routine + ' > All ICE candidates have been sent');
+      if (state === 'established') {
+        // Call successfully established
+        myLog('Call established');
+        setStatus('Call in progress');
+      } else if (state === 'terminated') {
+        // Call ended
+        myLog('Call terminated');
+        setStatus('Call ended');
       }
-    };
+    });
 
-    peerConnection.oniceconnectionstatechange = () => {
-      myLog(routine + ' > ICE connection state changed to: ' + peerConnection.iceConnectionState);
-    };
-
-    peerConnection.ontrack = (event) => {
-      myLog(routine + ' > Received remote track');
-      // Handle remote media stream
-    };
-
-    const localStream = await mediaDevices.getUserMedia({ audio: true });
-    localStream.getTracks().forEach((track) => peerConnection.addTrack(track, localStream));
-
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-
-    setStatus('Calling ' + ext + '...');
-
-    const session = await inviter.invite();
-
-    session.delegate = {
-      onAccept: async (response) => {
-        myLog(routine + ' > Call accepted');
-
-        if (peerConnection.signalingState === 'have-local-offer') {
-          const remoteDescription = new RTCSessionDescription({
-            type: 'answer',
-            sdp: response.message.body,
-          });
-          try {
-            await peerConnection.setRemoteDescription(remoteDescription);
-            setStatus('Call with ' + ext + ' established');
-
-            // Send ACK after setting the remote description
-            session.ack();
-          } catch (error) {
-            myLog(routine + ' > Failed to set remote description: ' + error.message);
-            setStatus('Error: ' + error.message);
-          }
-        } else {
-          myLog(routine + ' > Unexpected signaling state: ' + peerConnection.signalingState);
-        }
-      },
-      onTerminate: () => {
-        myLog(routine + ' > Call terminated');
-        setStatus('Call with ' + ext + ' ended');
-        peerConnection.close();
-      },
-    };
-  } catch (error) {
-    myLog(routine + ' > Error: ' + error.message);
-    setStatus('Error: ' + error.message);
+    // Send the INVITE request to initiate the call
+    await inviter.invite();
+    myLog('INVITE sent');
+    setStatus(`Calling ${ext}...`);
+  } catch (err) {
+    myLog(`${routine} error: ${err.message}`);
+    setStatus(`Call failed: ${err.message}`);
   }
 };
 
