@@ -17,29 +17,7 @@ const sipCall = async (userAgent, ext, setStatus) => {
 
   const peerConstraints = {
     iceServers: [
-      {
-        urls: 'stun:stun.relay.metered.ca:80',
-      },
-      {
-        urls: 'turn:global.relay.metered.ca:80',
-        username: '3b09b9108082e268b7bcfa97',
-        credential: 'jfc6haQzbho21ot6',
-      },
-      {
-        urls: 'turn:global.relay.metered.ca:80?transport=tcp',
-        username: '3b09b9108082e268b7bcfa97',
-        credential: 'jfc6haQzbho21ot6',
-      },
-      {
-        urls: 'turn:global.relay.metered.ca:443',
-        username: '3b09b9108082e268b7bcfa97',
-        credential: 'jfc6haQzbho21ot6',
-      },
-      {
-        urls: 'turns:global.relay.metered.ca:443?transport=tcp',
-        username: '3b09b9108082e268b7bcfa97',
-        credential: 'jfc6haQzbho21ot6',
-      },
+      
     ],
   };
 
