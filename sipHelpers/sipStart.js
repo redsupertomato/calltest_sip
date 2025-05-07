@@ -1,40 +1,61 @@
-import  { UserAgent }  from 'sip.js';
-
+import { UserAgent } from 'sip.js';
 import { myLog } from '../myStuff/myStuff.js';
 
 const sipStart = async (setStatus) => {
   const routine = 'sipStart ';
-  myLog (routine + '>>>>> start >>>>>');
+  myLog(routine + '>>>>> start >>>>>');
 
-  setStatus ('Starting SIP');
+  setStatus('Starting SIP');
 
   const transportOptions = {
-    server: "wss://rhpbxprod02.com:8089/ws",
-    connectionTimeout: 10000  // 10 seconds
+    server: "wss://sipus1.messagenius.dev/ws", // WebSocket URL
+    connectionTimeout: 10000, // Timeout in milliseconds
+    traceSip: true, // Enable detailed SIP tracing
+    allowLegacyNotifications: true // Compatibility with older servers
   };
 
-  const uri = UserAgent.makeURI("sip:10005@rhpbxprod02.com");
+  const uri = UserAgent.makeURI("sip:102@sipus1.messagenius.dev");
   if (!uri) {
-    myLog (routine + " Failed to create URI");
+    const msg = routine + " Failed to create URI";
+    myLog(msg);
+    alert(msg);
+    return null;
   }
+
   const userAgentOptions = {
     uri,
-    authorizationPassword: "Mark10005!",
-    authorizationUsername: "10005",
-    transportOptions
+    authorizationPassword: "msg!", // Ensure this is correct
+    authorizationUsername: "102",  // Ensure this is correct
+    transportOptions,
+    logConfiguration: true, // Log user agent configuration
+    registererOptions: {
+      expires: 600, // Registration expiration in seconds
+      logConfiguration: true
+    }
   };
+
   let userAgent = null;
   try {
-    myLog (routine + '- starting user agent');
+    myLog(routine + '- starting user agent');
     userAgent = new UserAgent(userAgentOptions);
-    await userAgent.start();
-  }
-  catch (err) {
-    msg = routine + '- userAgent start failed: ' + err.message;
-    myLog (msg);
-    alert (msg);
-  }
-  return userAgent;
-}
+    await userAgent.start(); // Connect to SIP server
+    myLog(routine + '- user agent started successfully');
 
-export default sipStart
+    // Attempt to register the user agent
+    const registerer = userAgent.registerer || userAgent.getRegisterer();
+    if (registerer) {
+      myLog(routine + '- registering user agent');
+      await registerer.register();
+      myLog(routine + '- user agent registered successfully');
+    }
+  } catch (err) {
+    const msg = routine + '- userAgent start failed: ' + (err.message || err);
+    myLog(msg);
+    alert(msg);
+    return null;
+  }
+
+  return userAgent;
+};
+
+export default sipStart;
